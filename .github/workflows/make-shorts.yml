@@ -1,0 +1,53 @@
+name: make-shorts
+
+on:
+  workflow_dispatch:
+    inputs:
+      input_url:
+        description: "Direct URL to the .txt/.html question file (e.g. a Telegram file link)"
+        required: true
+      chat_id:
+        description: "Telegram chat_id to send the finished video(s) to"
+        required: true
+      qpv:
+        description: "Questions per video"
+        required: false
+        default: "5"
+      timer:
+        description: "Seconds per question"
+        required: false
+        default: "10"
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pillow pywin32 static-ffmpeg numpy requests
+
+      - name: Download input file
+        shell: pwsh
+        run: |
+          Invoke-WebRequest -Uri "${{ github.event.inputs.input_url }}" -OutFile input.txt
+
+      - name: Run V5 engine (headless)
+        run: |
+          python run_cli.py input.txt out --qpv ${{ github.event.inputs.qpv }} --timer ${{ github.event.inputs.timer }}
+
+      - name: Send videos to Telegram
+        shell: pwsh
+        env:
+          BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          CHAT_ID: ${{ github.event.inputs.chat_id }}
+        run: |
+          python send_to_telegram.py out
