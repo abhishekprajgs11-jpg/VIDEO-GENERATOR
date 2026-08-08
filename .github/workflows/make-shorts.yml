@@ -17,6 +17,30 @@ on:
         description: "Seconds per question"
         required: false
         default: "10"
+      width:
+        description: "Video width"
+        required: false
+        default: "1080"
+      height:
+        description: "Video height"
+        required: false
+        default: "1920"
+      voice_idx:
+        description: "Voice index"
+        required: false
+        default: "0"
+      speed:
+        description: "Playback speed"
+        required: false
+        default: "1.0"
+      show_expl:
+        description: "Show explanation flag"
+        required: false
+        default: ""
+      workers:
+        description: "Parallel workers"
+        required: false
+        default: "2"
 
 jobs:
   build:
@@ -42,7 +66,7 @@ jobs:
 
       - name: Run V5 engine (headless)
         run: |
-          python run_cli.py input.txt out --qpv ${{ github.event.inputs.qpv }} --timer ${{ github.event.inputs.timer }}
+          python run_cli.py input.txt out --qpv ${{ github.event.inputs.qpv }} --timer ${{ github.event.inputs.timer }} --width ${{ github.event.inputs.width }} --height ${{ github.event.inputs.height }} --voice-idx ${{ github.event.inputs.voice_idx }} --speed ${{ github.event.inputs.speed }} --workers ${{ github.event.inputs.workers }} ${{ github.event.inputs.show_expl }}
 
       - name: Send videos to Telegram
         shell: pwsh
